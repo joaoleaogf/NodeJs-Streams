@@ -1,0 +1,42 @@
+version: '3.8'
+
+
+services:
+  service:
+    user: 1000:1000
+    build: .
+    ports:
+      - 3000:3000
+    volumes:
+      - .:/home/node/app
+      - ./logs/zsh/powerlevel10k/.p10k.zsh:/home/node/.p10k.zsh:delegated
+      - ./logs/zsh/history:/home/node/zsh:delegated
+    restart: unless-stopped
+    networks:
+      - app-network
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongo
+    hostname: mongo
+    ports:
+      - 27019:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: 123456
+      MONGO_INITDB_DATABASE: streamings
+    volumes:
+      - dbdata:/data/db
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    name: app-network
+    driver: bridge
+
+volumes:
+  dbdata:

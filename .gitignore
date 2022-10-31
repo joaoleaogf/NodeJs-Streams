@@ -1,0 +1,11 @@
+./node_modules
+./.devcontainer
+./.vscode
+./.gitignore
+./.gitattributes
+./.editorconfig
+./.prettierrc
+./.prettierignore
+./.eslintrc
+./.eslintignore
+./logs
