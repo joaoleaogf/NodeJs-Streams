@@ -15,7 +15,7 @@ export const fileSchema = new Schema({
   collection: 'fs.files'
 });
 
-/* // Schema custom types
+// Schema custom types
 
 // Making an alias for the uploadDate property
 fileSchema.virtual('createdAt').get(function () { return this.uploadDate })
@@ -120,4 +120,4 @@ fileSchema.method('download', function (stream, callback) {
       if (callback) callback()
     })
   })
-}) */
+})

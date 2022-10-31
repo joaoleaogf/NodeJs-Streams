@@ -1,13 +1,10 @@
 import * as mongoose from 'mongoose';
-import * as dotEnv from 'dotenv';
-
-import * as fileSchema from './schemas/file-schema.js';
-
-dotEnv.config();
+import * as fileSchema from '../models/schemas/file-schema.js';
+import { pass, user, host } from '../config/database/database.js';
 
 export class DatabaseService {
 
-    DB_URL = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_URL}`
+    DB_URL = `mongodb://${user}:${pass}@${host}`
 
     connection;
 
