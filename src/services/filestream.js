@@ -1,43 +1,53 @@
 import mongoose from "mongoose";
 import { CONNECTION } from "../main";
+import { CHUNK_SIZE } from "../config/file/file";
 
 export class FileStreamer {
 
     connection;
-    bucketName;
 
-    constructor(connection, bucketName) {
+    fileRepository;
+
+    gridFileRepository;
+
+    constructor(connection) {
         this.connection = connection;
-        this.bucketName = bucketName;
     }
 
-    getFileStream(fileKey, path) {
-        const key = `${path}/${fileKey}`;
-        const videoSize = fs.statSync(key).size;
+    async getFile(id) {
+        const file = await this.connection.FILE.findOne({ _id: id });
 
-        const CHUNK_SIZE = 10 ** 6 * 2; // 1MB
+    }
+
+
+    /* getFileStream(fileKey) {
+ 
         const start = Number(range.replace(/\D/g, ""));
-
+ 
         const end = Math.min(start + CHUNK_SIZE, videoSize - 1);
-
+ 
         const headers = {
             "Content-Range": `bytes ${start}-${end}/${videoSize}`,
             "Accept-Ranges": "bytes",
             "Content-Length": contentLength,
             "Content-Type": "video/mp4",
         };
+ 
+ 
+    } */
 
-
-    }
-
-    getFileStream(fileKey) {
-        const { bucketName } = this;
-
-        const bucket = new mongoose.mongo.GridFSBucket(CONNECTION, {
-            bucketName
+    uploadFile(file) {
+        const bucket = new mongoose.mongo.GridFSBucket(this.connection, {
+            bucketName: `${this.connection.CHUNK.collection.collectionName}-files`
         });
 
-        return bucket.openDownloadStreamByName(fileKey);
+        const uploadStream = bucket.openUploadStream(file.name);
+        const id = uploadStream.id;
+
+        uploadStream.write(file.data);
+        uploadStream.end();
+
+        return id;
     }
 
 }

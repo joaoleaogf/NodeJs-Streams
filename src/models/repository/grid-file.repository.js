@@ -1,4 +1,3 @@
-import * as mongoose from 'mongoose';
 import { mongo } from 'mongoose';
 
 export class GridFileRepository {
@@ -11,38 +10,62 @@ export class GridFileRepository {
 
     connection;
 
+    chunkSizeBytes = 255;
+
     constructor(connectionInstance) {
         this.connection = connectionInstance;
+
+        this.gridFile = this.connection.CHUNK;
     }
 
     async getBucket() {
         if (!this.bucket) {
 
             this.bucket = new mongo.GridFSBucket(this.connection, {
-                bucketName: this.gridFile.collection.collectionName.replace('.files', '')
+                bucketName: `${this.gridFile.collection.collectionName}-files`
             })
         }
 
         return this.bucket
     }
 
-    async findOneAndDelete(query) {
-        const doc = await this.connection.findOne(query)
-
-        if (doc) await this.getBucket().delete(doc._id)
-
-        return doc
+    async findOneById(id) {
+        return this.gridFile.findOne({ _id: id });
     }
 
-    async getUploadStream() {
+    async removeById(id) {
+        const doc = await this.gridFile.findOneById(id);
+
+        if (doc) {
+            await this.getBucket().delete(doc._id);
+        }
+
+        return doc;
+    }
+
+    async removeByIds(ids) {
+        const docs = await this.gridFile.find({ _id: { $in: ids } });
+
+        if (docs) {
+            await this.getBucket().deleteMany({ _id: { $in: ids } });
+        }
+
+        return docs;
+    }
+
+    async create(chunk) {
+        return this.gridFile.create(chunk);
+    }
+
+    async createMany(chunks) {
+        return this.gridFile.insertMany(chunks);
+    }
+
+    async getUploadStream(filename, id) {
         const bucket = this.getBucket();
 
-        // mongoose generates an id
-        return bucket.openUploadStreamWithId(this._id, this.filename, {
-            chunkSizeBytes: this.chunkSizeBytes,
-            metadata: this.metadata,
-            contentType: this.contentType,
-            aliases: this.aliases
+        return bucket.openUploadStreamWithId(id, filename, {
+            chunkSizeBytes: this.chunkSizeBytes
         });
     }
 
@@ -52,23 +75,23 @@ export class GridFileRepository {
         return bucket.openDownloadStream(id);
     }
 
-    async uploadStream(stream) {
-        const uploadStream = this.getUploadStream();
+    async uploadStream(stream, id, filename) {
+        const uploadStream = this.getUploadStream(id, filename);
 
         stream.pipe(uploadStream);
 
         return uploadStream;
     }
 
-    async downloadStream(stream) {
-        const downloadStream = this.getDownloadStream();
+    async downloadStream(stream, id) {
+        const downloadStream = this.getDownloadStream(id);
 
         downloadStream.pipe(stream);
     }
 
-    async upload(stream, callback) {
+    async upload(stream, callback, id, filename) {
         return new Promise((resolve, reject) => {
-            const uploadStream = this.uploadStream(stream)
+            const uploadStream = this.uploadStream(stream, id, filename)
 
             uploadStream.on('error', (error) => {
                 reject(error)
@@ -86,7 +109,7 @@ export class GridFileRepository {
 
     async download(id, stream, callback) {
         return new Promise((resolve, reject) => {
-            const downloadStream = this.downloadStream(stream)
+            const downloadStream = this.downloadStream(stream, id)
 
             downloadStream.on('error', (error) => {
                 reject(error)
