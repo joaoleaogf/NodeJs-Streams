@@ -12,10 +12,10 @@ export class GridFileRepository {
 
     chunkSizeBytes = 255;
 
-    constructor(connectionInstance) {
+    constructor(connectionInstance, gridFileConnection) {
         this.connection = connectionInstance;
 
-        this.gridFile = this.connection.CHUNK;
+        this.gridFile = gridFileConnection;
     }
 
     async getBucket() {

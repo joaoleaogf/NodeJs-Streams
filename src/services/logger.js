@@ -1,46 +1,40 @@
-import { MongoClient, Logger } from 'mongodb';
-import * as fs from 'fs';
-import * as path from 'path';
+import { Logger } from 'mongodb';
 
 Logger.setLevel('info');
 
-class Logger {
-    constructor(name, dir = "./logs", cacheSize = 100) {
+export class LoggerService {
+    constructor(name, connection) {
         this.name = name;
-
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir);
-        }
-
-        this.path = path.join(dir, `${new Date().toISOString().replaceAll(':', '-').split('.')[0]}
-            -
-            ${this.name}.log`);
-        this.cacheSize = cacheSize;
-        this.cache = []
+        this.connection = connection;
     }
 
-    log(level, message) {
-        const output = `${new Date().toISOString().replace('T', ' ').split('.')[0]} ${this.name} ${level} ${message}`
-
-        console.log(output)
-
-        this.cache.push(output)
-
-        if (this.cache.length >= this.cacheSize) {
-            fs.appendFileSync(this.path, this.cache.map(l => `${l}\n`).join(''))
-            this.cache = []
-        }
+    async log(level, message, method, description, statusCode, timestamp, ip, url, userAgent) {
+        await this.connection.create({
+            log: this.name, message, level, method, description, statusCode, timestamp, ip, url, userAgent
+        })
     }
 
-    info(message) { this.log('info', message) }
+    async info(message, method, description, statusCode, timestamp, ip, url, userAgent) {
+        await this.log('info', message, method, description, statusCode, timestamp, ip, url, userAgent)
+    }
 
-    debug(message) { this.log('debug', message) }
+    async debug(message, method, description, statusCode, timestamp, ip, url, userAgent) {
+        await this.log('debug', message, method, description, statusCode, timestamp, ip, url, userAgent)
+    }
 
-    trace(message) { this.log('trace', message) }
+    async trace(message, method, description, statusCode, timestamp, ip, url, userAgent) {
+        await this.log('trace', message, method, description, statusCode, timestamp, ip, url, userAgent)
+    }
 
-    warn(message) { this.log('warn', message) }
+    async warn(message, method, description, statusCode, timestamp, ip, url, userAgent) {
+        await this.log('warn', message, method, description, statusCode, timestamp, ip, url, userAgent)
+    }
 
-    error(message) { this.log('error', message) }
+    async error(message, method, description, statusCode, timestamp, ip, url, userAgent) {
+        await this.log('error', message, method, description, statusCode, timestamp, ip, url, userAgent)
+    }
 
-    fatal(message) { this.log('fatal', message) }
+    async fatal(message, method, description, statusCode, timestamp, ip, url, userAgent) {
+        await this.log('fatal', message, method, description, statusCode, timestamp, ip, url, userAgent)
+    }
 }

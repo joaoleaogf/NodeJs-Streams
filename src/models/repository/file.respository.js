@@ -1,9 +1,8 @@
 
 export class FileRepository {
-    constructor(connection) {
-        this.connection = connection;
-        this.file = this.connection.FILE;
-        this.chunk = this.connection.CHUNK;
+    constructor(fileConnection, chunkConnection) {
+        this.file = fileConnection;
+        this.chunk = chunkConnection;
     }
 
     async findOneById(id) {
@@ -11,17 +10,13 @@ export class FileRepository {
     }
 
     async removeById(id) {
-        const doc = await this.file.findOneById(id);
 
         if (doc) {
-            await this.chunk.deleteMany(doc.chunks);
-            await this.file.delete(id);
         }
 
         return doc;
     }
 
     async create(file) {
-        return this.file.create(file);
     }
 }

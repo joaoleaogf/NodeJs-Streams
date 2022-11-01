@@ -2,17 +2,18 @@ import * as mongoose from 'mongoose';
 import { pass, user, host } from '../config/database/database.js';
 import { chunkSchema } from '../models/schemas/chunk-schema.js';
 import { fileSchema } from '../models/schemas/file-schema.js';
+import { LogSchema } from '../models/schemas/log-schema.js';
+import { LoggerService } from './logger.js';
 
 
 export class DatabaseService {
-    connection;
-
-    FILE;
-
-    CHUNK;
 
     constructor() {
         this.mongooseConection();
+
+        this.loggerService = new LoggerService('DatabaseService', this.LOGGER);
+
+        this.loggerService.info('DatabaseService initialized');
     }
 
     async mongooseConection() {
@@ -31,5 +32,6 @@ export class DatabaseService {
 
         this.FILE = this.connection.model('GridFile', fileSchema);
         this.CHUNK = this.connection.model('GridFSBucket', chunkSchema);
+        this.LOGGER = this.connection.model('Log', LogSchema);
     }
 }

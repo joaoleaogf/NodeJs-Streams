@@ -1,14 +1,6 @@
 import mongoose from "mongoose";
-import { CONNECTION } from "../main";
-import { CHUNK_SIZE } from "../config/file/file";
 
 export class FileStreamer {
-
-    connection;
-
-    fileRepository;
-
-    gridFileRepository;
 
     constructor(connection) {
         this.connection = connection;
